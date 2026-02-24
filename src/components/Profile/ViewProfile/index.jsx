@@ -127,6 +127,47 @@ const ProfileView = () => {
     setFollowDisable(false);
   };
 
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    // You could add a snackbar notification here
+  };
+
+  if (loading || !profileData) {
+    return (
+      <ThemeProvider theme={basicTheme}>
+        <LinearProgress />
+      </ThemeProvider>
+    );
+  }
+
+  const socialLinks = [
+    {
+      icon: <FacebookIcon className="facebook-color" />,
+      link: profileData.link_facebook,
+      baseUrl: "https://www.facebook.com/",
+      label: "Facebook"
+    },
+    {
+      icon: <TwitterIcon className="X-color" />,
+      link: profileData.link_twitter,
+      baseUrl: "https://x.com/",
+      label: "X"
+    },
+    {
+      icon: <GitHubIcon className="github-color" />,
+      link: profileData.link_github,
+      baseUrl: "https://github.com/",
+      label: "GitHub"
+    },
+    {
+      icon: <LinkedInIcon className="linkedin-color" />,
+      link: profileData.link_linkedin,
+      baseUrl: "https://www.linkedin.com/in/",
+      label: "LinkedIn"
+    }
+  ];
+
   return (
     <ThemeProvider theme={basicTheme}>
       <Card className="p-0">
