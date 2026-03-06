@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import Routes from "./routes";
 import "./App.less";
 import { useFirebase, useFirestore } from "react-redux-firebase";
@@ -13,7 +14,12 @@ const App = () => {
   useEffect(() => {
     fetchAndIndexTutorials()(firebase, firestore, dispatch);
   }, [firebase, firestore, dispatch]);
-  return <Routes />;
+  return (
+    <>
+      <Toaster position="top-center"/>
+        <Routes />
+    </>
+  );
 };
 
 export default App;
