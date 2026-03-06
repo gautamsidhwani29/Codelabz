@@ -1,9 +1,7 @@
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
-  Collapse,
   Divider,
   FormControlLabel,
   IconButton,
@@ -12,7 +10,6 @@ import {
   Typography
 } from "@mui/material";
 import {
-  Close as CloseIcon,
   LockOutlined,
   MailOutlined,
   Visibility,
@@ -38,8 +35,6 @@ const SignUp = () => {
   const [agreed, setAgreed] = useState(false);
   const [agreedError, setAgreedError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [errorOpen, setErrorOpen] = useState(true);
 
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMsg, setEmailErrorMsg] = useState("");
@@ -51,7 +46,6 @@ const SignUp = () => {
   const errorProp = useSelector(({ auth }) => auth.profile.error);
   const loadingProp = useSelector(({ auth }) => auth.profile.loading);
 
-  useEffect(() => setError(errorProp), [errorProp]);
   useEffect(() => setLoading(loadingProp), [loadingProp]);
   useEffect(() => {
     return () => clearAuthError()(dispatch);
@@ -126,12 +120,7 @@ const SignUp = () => {
     }
 
     if (emailOk && passwordOk && confirmOk) {
-      try {
-        await signUp({ email, password })(firebase, dispatch);
-      } catch (err) {
-        setError(err.message);
-        setErrorOpen(true);
-      }
+      await signUp({ email, password })(firebase, dispatch);
     }
   };
 
@@ -142,21 +131,6 @@ const SignUp = () => {
       >
         Create Account
       </Typography>
-      {error && (
-        <Collapse in={errorOpen}>
-          <Alert
-            severity="error"
-            action={
-              <IconButton size="small" onClick={() => setErrorOpen(false)}>
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            }
-            sx={{ mb: 2 }}
-          >
-            {error}
-          </Alert>
-        </Collapse>
-      )}
       <TextField
         variant="outlined"
         placeholder="Enter your email"

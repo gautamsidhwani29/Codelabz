@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase } from "react-redux-firebase";
-import { useLocation } from "react-router-dom";
 import validator from "validator";
 import {
   Button,
@@ -25,38 +24,28 @@ import {
 } from "@mui/icons-material";
 import { clearAuthError, signIn } from "../../../store/actions";
 import SmButtons from "../smButton/smButtons";
-import ViewAlerts from "./ViewAlerts";
 import { inputStyles } from "../styles";
 import { Link } from "react-router-dom";
 
 const Login = () => {
   const firebase = useFirebase();
   const dispatch = useDispatch();
-  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [signupMessage, setSignupMessage] = useState("");
-
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMsg, setEmailErrorMsg] = useState("");
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState("");
 
-  const errorProp = useSelector(({ auth }) => auth.profile.error);
   const loadingProp = useSelector(({ auth }) => auth.profile.loading);
 
-  useEffect(() => setError(errorProp), [errorProp]);
   useEffect(() => setLoading(loadingProp), [loadingProp]);
   useEffect(() => {
     return () => clearAuthError()(dispatch);
   }, [dispatch]);
-  useEffect(() => {
-    setSignupMessage(location.state?.successMessage || "");
-  }, [location.state]);
 
   const validateEmail = () => {
     if (validator.isEmpty(email)) {
@@ -83,7 +72,6 @@ const Login = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
     if (validateEmail() && validatePassword()) {
       await signIn({ email, password })(firebase, dispatch);
     }
@@ -97,7 +85,6 @@ const Login = () => {
       >
         Login
       </Typography>
-      <ViewAlerts error={error} email={email} successMessage={signupMessage} />
       <TextField
         variant="outlined"
         autoFocus
