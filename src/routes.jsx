@@ -130,12 +130,16 @@ const Routes = () => {
             path="/auth"
             render={props => <AuthPage {...props} type="login" />}
           />
-          <Route exact path="/login">
-            <Redirect to="/auth" />
-          </Route>
-          <Route exact path="/signup">
-            <Redirect to="/auth" />
-          </Route>
+           <Route
+            exact
+            path="/login"
+            render={props => <AuthPage {...props} type="login" />}
+          />
+          <Route
+            exact
+            path="/signup"
+            render={props => <AuthPage {...props} type="signup" />}
+          />
 
           <Route
             exact
