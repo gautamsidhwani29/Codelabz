@@ -1,87 +1,72 @@
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormGroup from "@mui/material/FormGroup";
-import Grid from "@mui/material/Grid";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import LockOutlined from "@mui/icons-material/LockOutlined";
-import MailOutlined from "@mui/icons-material/MailOutlined";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase } from "react-redux-firebase";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import validator from "validator";
-import Divider from "../../../globalComponents/Divider";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Box,
+  Typography,
+  Link as MuiLink
+} from "@mui/material";
+import {
+  LockOutlined,
+  MailOutlined,
+  Visibility,
+  VisibilityOff
+} from "@mui/icons-material";
 import { clearAuthError, signIn } from "../../../store/actions";
 import SmButtons from "../smButton/smButtons";
 import ViewAlerts from "./ViewAlerts";
-import useStyles from "./styles";
-import PropTypes from "prop-types";
+import { inputStyles } from "../styles";
+import { Link } from "react-router-dom";
 
-const Login = ({
-  loginButton = "blue",
-  background = "white",
-  loginText = "Welcome Back"
-}) => {
+const Login = () => {
   const firebase = useFirebase();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const classes = useStyles();
-  const [email, setEmail] = useState("");
-  const [emailValidateError, setEmailValidateError] = useState(false);
-  const [emailValidateErrorMessage, setEmailValidateErrorMessage] =
-    useState("");
+  const dispatch = useDispatch();
+  const location = useLocation();
 
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordValidateError, setPasswordValidateError] = useState(false);
-  const [passwordValidateErrorMessage, setPasswordValidateErrorMessage] =
-    useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [signupMessage, setSignupMessage] = useState("");
+
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMsg, setEmailErrorMsg] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState("");
 
   const errorProp = useSelector(({ auth }) => auth.profile.error);
   const loadingProp = useSelector(({ auth }) => auth.profile.loading);
-  const dispatch = useDispatch();
-  const location = useLocation();
-  const [signupMessage, setSignupMessage] = useState("");
-
-  useEffect(() => {
-    // Update signupMessage when the location state changes
-    setSignupMessage(location.state?.successMessage || "");
-  }, [location.state]);
 
   useEffect(() => setError(errorProp), [errorProp]);
   useEffect(() => setLoading(loadingProp), [loadingProp]);
-
-  useEffect(
-    () => () => {
-      clearAuthError()(dispatch);
-    },
-    [dispatch]
-  );
-
-  const handleClickShowPassword = () => setShowPassword(!showPassword);
-
-  const handleMouseDownPassword = event => event.preventDefault();
-
-  const onChangeEmail = event => setEmail(event.target.value);
-  const onChangePassword = event => setPassword(event.target.value);
+  useEffect(() => {
+    return () => clearAuthError()(dispatch);
+  }, [dispatch]);
+  useEffect(() => {
+    setSignupMessage(location.state?.successMessage || "");
+  }, [location.state]);
 
   const validateEmail = () => {
     if (validator.isEmpty(email)) {
-      setEmailValidateError(true);
-      setEmailValidateErrorMessage("Please Enter your Email!");
+      setEmailError(true);
+      setEmailErrorMsg("Please enter your email!");
       return false;
     }
     if (!validator.isEmail(email)) {
-      setEmailValidateError(true);
-      setEmailValidateErrorMessage("Please enter an valid email!");
+      setEmailError(true);
+      setEmailErrorMsg("Please enter a valid email!");
       return false;
     }
     return true;
@@ -89,186 +74,135 @@ const Login = ({
 
   const validatePassword = () => {
     if (validator.isEmpty(password)) {
-      setPasswordValidateError(true);
-      setPasswordValidateErrorMessage("Please enter your password!");
+      setPasswordError(true);
+      setPasswordErrorMsg("Please enter your password!");
       return false;
     }
     return true;
   };
 
-  const onSubmit = async e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setError("");
-    if (validateEmail() & validatePassword()) {
-      await signIn({ email: email, password: password })(firebase, dispatch);
+    if (validateEmail() && validatePassword()) {
+      await signIn({ email, password })(firebase, dispatch);
     }
   };
 
-  const onFocusEmail = () => {
-    setEmailValidateError(false);
-    setEmailValidateErrorMessage("");
-  };
-
-  const onFocusPassword = () => {
-    setPasswordValidateError(false);
-    setPasswordValidateErrorMessage("");
-  };
-
-  const handleMouseEnter = e => {
-    e.target.style.color = "royalblue";
-  };
-  const handleMouseLeave = e => {
-    e.target.style.color = "#03AAFA";
-  };
-
   return (
-    <Card
-      raised
-      className={`${classes.card}   `}
-      style={{ background: background }}
-      data-testId="login"
-    >
-      <CardContent>
-        <Typography
-          variant="h4"
-          style={{ textAlign: "center", marginBottom: "40px" }}
-        >
-          {loginText}
-        </Typography>
-        <ViewAlerts
-          error={error}
-          email={email}
-          successMessage={signupMessage}
-        />
-        <div>
-          <TextField
-            error={emailValidateError}
-            label="Email"
-            autoFocus
-            variant="outlined"
-            placeholder="mail@codelabz.com"
-            value={email}
-            onChange={onChangeEmail}
-            helperText={emailValidateError ? emailValidateErrorMessage : null}
-            fullWidth
-            autoComplete="email"
-            required
-            onFocus={onFocusEmail}
-            className="email"
-            style={{ marginBottom: "15px" }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <MailOutlined style={{ color: "rgba(0,0,0,.25)" }} />
-                </InputAdornment>
-              )
-            }}
-          />
-          <TextField
-            label="Password"
-            variant="outlined"
-            helperText={
-              passwordValidateError ? passwordValidateErrorMessage : null
-            }
-            className="password"
-            error={passwordValidateError}
-            fullWidth
-            required
-            value={password}
-            onFocus={onFocusPassword}
-            onChange={onChangePassword}
-            autoComplete="current-password"
-            type={showPassword ? "text" : "password"}
-            style={{ marginBottom: "15px" }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                  >
-                    {showPassword ? <Visibility /> : <VisibilityOff />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
-          <Grid container alignItems="center" justify="space-between">
-            <Grid>
-              <FormGroup row>
-                <FormControlLabel
-                  control={<Checkbox name="remember" color="primary" />}
-                  label="Remember me"
-                />
-              </FormGroup>
-            </Grid>
-            <Grid
-              style={{ fontFamily: "Arial, sans-serif", fontSize: "1.5vh" }}
-            >
-              <Link
-                data-testId="forgotPassoword"
-                to="/forgotpassword"
-                className="login-form-forgot"
-                style={{ float: "right" }}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <Typography
+        variant="h5"
+        sx={{ textAlign: "center", fontWeight: 700, mb: 2 }}
+      >
+        Login
+      </Typography>
+      <ViewAlerts error={error} email={email} successMessage={signupMessage} />
+      <TextField
+        variant="outlined"
+        autoFocus
+        placeholder="Enter your email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        onFocus={() => {
+          setEmailError(false);
+          setEmailErrorMsg("");
+        }}
+        helperText={emailError ? emailErrorMsg : null}
+        error={emailError}
+        fullWidth
+        autoComplete="email"
+        required
+        sx={{ ...inputStyles, mb: "15px" }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <MailOutlined style={{ color: "rgba(0,0,0,.25)" }} />
+            </InputAdornment>
+          )
+        }}
+      />
+      <TextField
+        placeholder="Enter your password"
+        variant="outlined"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+        onFocus={() => {
+          setPasswordError(false);
+          setPasswordErrorMsg("");
+        }}
+        helperText={passwordError ? passwordErrorMsg : null}
+        error={passwordError}
+        fullWidth
+        required
+        autoComplete="current-password"
+        type={showPassword ? "text" : "password"}
+        sx={{ ...inputStyles, mb: "15px" }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={() => setShowPassword(!showPassword)}
+                onMouseDown={e => e.preventDefault()}
               >
-                Forgot password
-              </Link>
-            </Grid>
-          </Grid>
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={onSubmit}
-            disabled={loading}
-            data-testId="loginButton"
-            className="loginButton"
-            style={{
-              color: "white",
-              borderRadius: "30px",
-              margin: "auto",
-              padding: "10px"
-            }}
-          >
-            {loading ? "Logging in..." : "Log in"}
-          </Button>
-        </div>
-        <Divider>or</Divider>
-        <SmButtons />
-        <Grid container justify="center" alignItems="center" className="mt-24">
-          <Grid item={true} sm={12} className="center">
-            New to <span className="brand-font text-bold">CodeLabz</span>?{" "}
-            <Link to={"/signup"}>
-              <span
-                style={{ color: "#03AAFA" }}
-                onMouseEnter={e => {
-                  handleMouseEnter(e);
-                }}
-                onMouseLeave={e => {
-                  handleMouseLeave(e);
-                }}
-              >
-                Create an account
-              </span>
-            </Link>
-          </Grid>
+                {showPassword ? <Visibility /> : <VisibilityOff />}
+              </IconButton>
+            </InputAdornment>
+          )
+        }}
+      />
+      <Grid
+        container
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 1, flexWrap: "wrap", gap: 1 }}
+      >
+        <Grid item>
+          <FormGroup>
+            <FormControlLabel
+              control={<Checkbox name="remember" color="primary" />}
+              label="Remember me"
+            />
+          </FormGroup>
         </Grid>
-      </CardContent>
-    </Card>
-  );
-};
+        <Grid item>
+          <MuiLink
+            sx={{
+              color: "#2563EB",
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+                color: "#1741b0"
+              }
+            }}
+            component={Link}
+            to="/forgotpassword"
+          >
+            Forgot password
+          </MuiLink>
+        </Grid>
+      </Grid>
 
-Login.propTypes = {
-  loginButton: PropTypes.string,
-  background: PropTypes.string,
-  loginText: PropTypes.string
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        onClick={handleSubmit}
+        disabled={loading}
+        data-testid="loginButton"
+        sx={{ color: "white", borderRadius: "30px", padding: "10px" }}
+      >
+        {loading ? "Logging in..." : "Login"}
+      </Button>
+      <Divider sx={{ padding: "20px" }}>OR</Divider>
+      <SmButtons />
+    </Box>
+  );
 };
 
 export default Login;

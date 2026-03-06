@@ -7,47 +7,30 @@ import { clearAuthError, sendPasswordResetEmail } from "../../../store/actions";
 import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
 import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputAdornment from "@mui/material/InputAdornment";
-import { makeStyles } from "@mui/styles";
 import { Alert } from "@mui/material";
-import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import { inputStyles } from "../styles";
 
-const useStyles = makeStyles({
-  root: {
-    padding: "2rem",
-    background: "theme.palette.background.paper",
-    border: "none",
-    boxShadow: "none"
-  },
-  heading: {
-    fontWeight: 600
-  }
-});
-
-const ForgotPassword = ({
-  rootBackground = "rgba(0,0,0,.01)",
-  confirmationText = "We have sent you an email containing the link to reset your password .Please check your inbox including spams",
-  fontweight = "800",
-  buttonColor = "blue"
-}) => {
+const ForgotPassword = () => {
   const firebase = useFirebase();
+  const dispatch = useDispatch();
+
+  const [email, setEmail] = useState("");
+  const [isValidEmail, setIsValidEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [email, setEmail] = useState("");
-  const [open, setOpen] = React.useState(true);
-  const [isValidEmail, setIsValidEmail] = useState(false);
+  const [open, setOpen] = useState(true);
+
   const errorProps = useSelector(({ auth }) => auth.profile.error);
   const loadingProps = useSelector(({ auth }) => auth.profile.loading);
-  const dispatch = useDispatch();
 
   useEffect(() => setError(errorProps), [errorProps]);
   useEffect(() => setLoading(loadingProps), [loadingProps]);
   useEffect(() => setOpen(true), [loadingProps]);
-
   useEffect(() => {
     if (errorProps === false && loadingProps === false) {
       setSuccess(true);
@@ -55,125 +38,174 @@ const ForgotPassword = ({
       setSuccess(false);
     }
   }, [errorProps, loadingProps]);
+  useEffect(() => {
+    return () => clearAuthError()(dispatch);
+  }, [dispatch]);
 
-  useEffect(
-    () => () => {
-      clearAuthError()(dispatch);
-    },
-    [dispatch]
-  );
+  const handleChange = e => {
+    const val = e.target.value;
+    setEmail(val);
+    setIsValidEmail(/^[^\s@]+@[^\s@]+\.[^\s@]+\s*$/.test(val));
+  };
 
-  const onSubmit = async values => {
-    values.preventDefault();
+  const onSubmit = async e => {
+    e.preventDefault();
     setError("");
     await sendPasswordResetEmail(email)(firebase, dispatch);
   };
 
-  const handleChange = e => {
-    const enteredEmail = e.target.value;
-    setEmail(enteredEmail);
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+\s*$/;
-    const isValid = emailRegex.test(enteredEmail);
-    setIsValidEmail(isValid);
-  };
-  const classes = useStyles();
-
   return (
-    <Card className={classes.root} data-testId="forgotPassword">
-      <Typography
-        variant="h4"
-        className={"mb-24 text-center " + classes.heading}
-      >
-        Trouble logging in?
-      </Typography>
-      <p className="mb-24 text-center">
-        Don't worry, we got it covered. <br />
-        Enter the email address registered with us and
-        <br /> we will send you a link to reset your password.
-      </p>
+    // Same page wrapper as AuthPage
+    <Box sx={pageStyle}>
+      <Box sx={cardStyle}>
+        <Typography
+          variant="h5"
+          sx={{ fontWeight: 700, textAlign: "center", mb: 1 }}
+        >
+          Trouble logging in?
+        </Typography>
 
-      {error && (
-        <Collapse in={open}>
-          <Alert
-            severity="error"
-            className="mb-16"
-            onClose={() => {
-              setOpen(false);
-            }}
-            message={""}
-          >
-            {error}
-          </Alert>
-        </Collapse>
-      )}
+        <Typography
+          sx={{
+            textAlign: "center",
+            color: "#6b7280",
+            fontSize: "0.9rem",
+            mb: 3
+          }}
+        >
+          Enter your email and we'll send you a link to reset your password.
+        </Typography>
 
-      {success && (
-        <Collapse in={open}>
-          <Alert
-            severity="success"
-            className="mb-16"
-            onClose={() => {
-              setOpen(false);
-            }}
-            message={""}
-          >
-            {confirmationText}
-          </Alert>
-        </Collapse>
-      )}
+        {error && (
+          <Collapse in={open}>
+            <Alert
+              severity="error"
+              onClose={() => setOpen(false)}
+              sx={{ mb: 2 }}
+            >
+              {error}
+            </Alert>
+          </Collapse>
+        )}
 
-      <form onSubmit={onSubmit}>
+        {success && (
+          <Collapse in={open}>
+            <Alert
+              severity="success"
+              onClose={() => setOpen(false)}
+              sx={{ mb: 2 }}
+            >
+              We've sent you an email with a link to reset your password. Please
+              check your inbox and spam folder.
+            </Alert>
+          </Collapse>
+        )}
+
+        {/* Email input — same pill style as Login/SignUp */}
         <OutlinedInput
-          placeholder="Email"
+          placeholder="Enter your email"
           autoComplete="email"
           onChange={handleChange}
-          className="mb-32"
           fullWidth
-          height="10rem"
-          data-testId="forgotPasswordEmail"
+          data-testid="forgotPasswordEmail"
+          sx={{
+            ...inputStyles["& .MuiOutlinedInput-root"],
+            mb: 2
+          }}
           startAdornment={
-            <InputAdornment sposition="start">
+            <InputAdornment position="start">
               <MailOutlineOutlinedIcon style={{ color: "rgba(0,0,0,.25)" }} />
-              &nbsp;
             </InputAdornment>
           }
         />
+
+        {/* Same pill button as Login/SignUp */}
         <Button
           variant="contained"
           color="primary"
-          loading={loading}
-          className="mt-10"
-          type="submit"
           fullWidth
-          data-testId="forgotPasswordButton"
-          disabled={!isValidEmail}
+          type="submit"
+          onClick={onSubmit}
+          disabled={!isValidEmail || loading}
+          data-testid="forgotPasswordButton"
+          sx={{
+            color: "white",
+            borderRadius: "50px",
+            padding: "10px",
+            mb: 2
+          }}
         >
           {loading ? "Sending..." : "Send me the link"}
         </Button>
-      </form>
-      <Grid justify="center" align="center" className="mt-16">
-        or
-      </Grid>
-      <Grid justify="center" align="center" className="mt-24">
-        <Grid sm={24} className="center">
-          <Link to={"/login"}>Back to Sign in</Link>
-        </Grid>
-      </Grid>
-      <Grid justify="center" align="center" className="mt-24">
-        <Grid sm={24} className="center">
-          New to <span className="brand-font text-bold">CodeLabz</span>?{" "}
-          <Link to={"/signup"}>Create an account</Link>
-        </Grid>
-      </Grid>
-    </Card>
+
+        <Divider sx={{ my: 1, color: "#9ca3af", fontSize: "0.8rem" }}>
+          or
+        </Divider>
+
+        <Box
+          sx={{
+            textAlign: "center",
+            mt: 2,
+            fontSize: "0.875rem",
+            color: "#6b7280"
+          }}
+        >
+          <Link
+            to="/auth"
+            style={{
+              color: "#2563EB",
+              textDecoration: "none",
+              fontWeight: 600
+            }}
+          >
+            Back to Login
+          </Link>
+        </Box>
+
+        <Box
+          sx={{
+            textAlign: "center",
+            mt: 1.5,
+            fontSize: "0.875rem",
+            color: "#6b7280"
+          }}
+        >
+          New to <strong>CodeLabz</strong>?{" "}
+          <Link
+            to={{ pathname: "/auth", state: { mode: "signup" } }}
+            style={{
+              color: "#2563EB",
+              textDecoration: "none",
+              fontWeight: 600
+            }}
+          >
+            Create an account
+          </Link>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
-ForgotPassword.propTypes = {
-  rootBackground: PropTypes.string,
-  confirmationText: PropTypes.string,
-  fontweight: PropTypes.string,
-  buttonColor: PropTypes.string
+const pageStyle = {
+  minHeight: "100vh",
+  background: "#f0f2f5",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  p: { xs: "16px", md: "24px 16px" },
+  fontFamily: "'Segoe UI', sans-serif",
+  boxSizing: "border-box"
+};
+
+const cardStyle = {
+  width: "100%",
+  maxWidth: 440,
+  background: "#fff",
+  borderRadius: "20px",
+  boxShadow: "0 28px 80px rgba(0,0,0,0.13)",
+  p: "48px 40px",
+  boxSizing: "border-box"
 };
 
 export default ForgotPassword;
