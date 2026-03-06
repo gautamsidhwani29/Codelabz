@@ -6,7 +6,12 @@ import {
   useFirebase,
   useFirestore
 } from "react-redux-firebase";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect
+} from "react-router-dom";
 import {
   UserIsAllowedUserDashboard,
   UserIsAllowOrgManager,
@@ -28,12 +33,12 @@ import ViewTutorial from "./components/Tutorials";
 import MyTutorials from "./components/Tutorials/MyTutorials";
 import Spinner from "./helpers/spinner";
 import CodeLabzAppBar from "./helpers/appBar";
-import MainNavbar from "./components/NavBar/new/MainNavbar";
 import UserDashboard from "./components/UserDashboard";
 import TutorialPage from "./components/TutorialPage";
 import Notification from "./components/Notification";
 import SearchResultsComponent from "./components/Tutorials/MyTutorials/Search/SearchResultsComponent";
 import { getProfileData } from "./store/actions";
+import ForgotPassword from "./components/AuthPage/ForgotPassword";
 
 const AuthIsLoaded = ({ children }) => {
   const firebase = useFirebase();
@@ -98,31 +103,44 @@ const AuthIsLoaded = ({ children }) => {
   return <Spinner />;
 };
 
-// Remember to add the paths that the MINI navbar should
-// be shown in components/NavBar/navbarPaths.js
-
 const Routes = () => {
   return (
     <Router>
       <AuthIsLoaded>
-        <CodeLabzAppBar />
-        {/* <Navbar /> */}
+        <Route
+          render={({ location }) => {
+            const authRoutes = [
+              "/login",
+              "/forgotpassword",
+              "/signup",
+              "/auth"
+            ];
+            if (authRoutes.includes(location.pathname)) return null;
+            return <CodeLabzAppBar />;
+          }}
+        />
         <Switch>
-          <Route exact path={"/"} component={UserIsAllowedUserDashboard(HomePage)} />
           <Route
             exact
-            path={"/login"}
-            render={props => <AuthPage {...props} type={"login"} />}
+            path={"/"}
+            component={UserIsAllowedUserDashboard(HomePage)}
           />
           <Route
             exact
-            path={"/signup"}
-            render={props => <AuthPage {...props} type={"signup"} />}
+            path="/auth"
+            render={props => <AuthPage {...props} type="login" />}
           />
+          <Route exact path="/login">
+            <Redirect to="/auth" />
+          </Route>
+          <Route exact path="/signup">
+            <Redirect to="/auth" />
+          </Route>
+
           <Route
             exact
             path={"/forgotpassword"}
-            render={props => <AuthPage {...props} type={"forgotpassword"} />}
+            render={props => <ForgotPassword {...props} />}
           />
           <Route
             exact
@@ -192,7 +210,6 @@ const Routes = () => {
           />
           <Route exact path={"*"} component={NotFound} />
         </Switch>
-        {/* <Footer /> */}
       </AuthIsLoaded>
     </Router>
   );
