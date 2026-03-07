@@ -6,7 +6,7 @@ import BrandName from "../../../../helpers/brandName";
 import SearchIcon from "@mui/icons-material/Search";
 import RightMenu from "./RightMenu";
 import LeftMenu from "./LeftMenu";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSelector } from "react-redux";
@@ -56,7 +56,8 @@ const useStyles = makeStyles(theme => ({
 
 function MainNavbar() {
   const classes = useStyles();
-
+  const location = useLocation();
+  const hideSearch = location.pathname.startsWith("/tutorials")
   const history = useHistory();
   const windowSize = useWindowSize();
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -80,6 +81,7 @@ function MainNavbar() {
       history.push(`/search?query=${searchQuery}`);
     }
   };
+  console.log("pathname:", location.pathname);
 
   return (
     <Headroom>
@@ -120,31 +122,33 @@ function MainNavbar() {
               </IconButton>
             </Grid>
           </Grid>
-          <Grid item xs={12} md={5}>
-            <Paper
-              component={"form"}
-              className={classes.root}
-              elevation={0}
-              onSubmit={handleSearch}
-            >
-              <IconButton
-                type="button"
-                aria-label="search"
-                disableRipple
-                className={classes.icon}
-                data-testid="navbarSearch"
-                onClick={handleSearch}
+          {!hideSearch && (
+            <Grid item xs={12} md={5}>
+              <Paper
+                component={"form"}
+                className={classes.root}
+                elevation={0}
+                onSubmit={handleSearch}
               >
-                <SearchIcon />
-              </IconButton>
-              <InputBase
-                className={classes.input}
-                value={searchQuery}
-                placeholder="Search..."
-                onChange={handleSearchChange}
-              />
-            </Paper>
-          </Grid>
+                <IconButton
+                  type="button"
+                  aria-label="search"
+                  disableRipple
+                  className={classes.icon}
+                  data-testid="navbarSearch"
+                  onClick={handleSearch}
+                >
+                  <SearchIcon />
+                </IconButton>
+                <InputBase
+                  className={classes.input}
+                  value={searchQuery}
+                  placeholder="Search..."
+                  onChange={handleSearchChange}
+                />
+              </Paper>
+            </Grid>
+          )}
           <Grid
             item
             container
