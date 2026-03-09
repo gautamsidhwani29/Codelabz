@@ -1,12 +1,26 @@
 import * as actions from "../../actions/actionTypes";
+import { AuthActionType } from "../../actions/actionTypes";
 import { modifyAuthErrorMsg } from "../../../helpers/errorMsgHandler";
 
-const initialState = {
+interface ProfileState {
+  loading: boolean;
+  error: string | false | null;
+}
+
+interface AuthAction {
+  type: AuthActionType;
+  payload?: unknown;
+}
+
+const initialState: ProfileState = {
   loading: false,
   error: null
 };
 
-const ProfileReducer = (state = initialState, { type, payload }) => {
+const ProfileReducer = (
+  state: ProfileState = initialState,
+  { type, payload }: AuthAction
+): ProfileState => {
   switch (type) {
     case actions.CLEAR_AUTH_PROFILE_STATE:
       return initialState;
