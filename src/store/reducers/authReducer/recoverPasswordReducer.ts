@@ -1,6 +1,20 @@
 import * as actions from "../../actions/actionTypes";
+import { AuthActionType } from "../../actions/actionTypes";
 
-const initialState = {
+interface RecoverPasswordState {
+  loading: boolean;
+  error: string | false | null;
+  resetError: string | false | null;
+  resetLoading: boolean;
+  user: string | null;
+}
+
+interface AuthAction {
+  type: AuthActionType;
+  payload?: unknown;
+}
+
+const initialState: RecoverPasswordState = {
   loading: false,
   error: null,
   resetError: null,
@@ -8,7 +22,10 @@ const initialState = {
   user: null
 };
 
-const RecoverPasswordReducer = (state = initialState, { type, payload }) => {
+const RecoverPasswordReducer = (
+  state: RecoverPasswordState = initialState,
+  { type, payload }: AuthAction
+): RecoverPasswordState => {
   switch (type) {
     case actions.CLEAR_AUTH_RECOVER_PASSWORD_STATE:
       return initialState;
@@ -33,7 +50,7 @@ const RecoverPasswordReducer = (state = initialState, { type, payload }) => {
         ...state,
         loading: false,
         error: false,
-        user: payload
+        user: payload as string
       };
 
     case actions.RESEND_VERIFY_EMAIL_FAIL:
@@ -41,7 +58,7 @@ const RecoverPasswordReducer = (state = initialState, { type, payload }) => {
       return {
         ...state,
         loading: false,
-        error: payload
+        error: payload as string
       };
 
     case actions.PASSWORD_RECOVERY_START:
@@ -62,7 +79,7 @@ const RecoverPasswordReducer = (state = initialState, { type, payload }) => {
       return {
         ...state,
         loading: false,
-        resetError: payload
+        resetError: payload as string
       };
 
     default:

@@ -1,12 +1,27 @@
 import * as actions from "../../actions/actionTypes";
+import { AuthActionType } from "../../actions/actionTypes";
 
-const initialState = {
+interface VerifyEmailState {
+  loading: boolean;
+  error: string | false | null;
+  email: string | null;
+}
+
+interface AuthAction {
+  type: AuthActionType;
+  payload?: unknown;
+}
+
+const initialState: VerifyEmailState = {
   loading: false,
   error: null,
   email: null
 };
 
-const VerifyEmailReducer = (state = initialState, { type, payload }) => {
+const VerifyEmailReducer = (
+  state: VerifyEmailState = initialState,
+  { type, payload }: AuthAction
+): VerifyEmailState => {
   switch (type) {
     case actions.CLEAR_AUTH_VERIFY_EMAIL_STATE:
       return initialState;
@@ -14,7 +29,7 @@ const VerifyEmailReducer = (state = initialState, { type, payload }) => {
     case actions.SET_VERIFY_EMAIL_FAIL:
       return {
         ...state,
-        email: payload
+        email: payload as string
       };
 
     case actions.RESEND_VERIFY_EMAIL_START:
@@ -38,7 +53,7 @@ const VerifyEmailReducer = (state = initialState, { type, payload }) => {
       return {
         ...state,
         loading: false,
-        error: payload
+        error: payload as string
       };
 
     default:
@@ -46,4 +61,4 @@ const VerifyEmailReducer = (state = initialState, { type, payload }) => {
   }
 };
 
-export default VerifyEmailReducer;
+export default VerifyEmailReducer;  
