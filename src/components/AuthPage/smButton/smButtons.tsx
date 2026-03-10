@@ -1,6 +1,7 @@
 import { Grid, IconButton, Icon } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useFirebase } from "react-redux-firebase";
+import type { Dispatch } from "redux";
 import GoogleImg from "../../../assets/orgs/google.png";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import XIcon from "@mui/icons-material/X";
@@ -8,9 +9,10 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import { signInWithGoogle, signInWithProviderID } from "../../../store/actions";
 import { btnSx, iconSx } from "../styles";
 
-const SmButtons = () => {
-  const dispatch = useDispatch();
+const SmButtons = (): JSX.Element => {
+  const dispatch = useDispatch<Dispatch>();
   const firebase = useFirebase();
+
   return (
     <Grid
       container
@@ -26,7 +28,11 @@ const SmButtons = () => {
           onClick={() => signInWithGoogle()(firebase, dispatch)}
         >
           <Icon sx={iconSx.google}>
-            <img style={iconSx.imageIcon} src={GoogleImg} alt="google" />
+            <img
+              style={iconSx.imageIcon as React.CSSProperties}
+              src={GoogleImg}
+              alt="google"
+            />
           </Icon>
         </IconButton>
       </Grid>

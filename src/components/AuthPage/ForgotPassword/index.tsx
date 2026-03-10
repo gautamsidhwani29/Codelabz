@@ -3,6 +3,7 @@ import MailOutlineOutlinedIcon from "@mui/icons-material/MailOutlineOutlined";
 import { Link } from "react-router-dom";
 import { useFirebase } from "react-redux-firebase";
 import { useDispatch, useSelector } from "react-redux";
+import type { Dispatch } from "redux";
 import { clearAuthError, sendPasswordResetEmail } from "../../../store/actions";
 import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
@@ -12,21 +13,32 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputAdornment from "@mui/material/InputAdornment";
 import { Alert } from "@mui/material";
 import Box from "@mui/material/Box";
-import { inputStyles } from "../styles";
+import { inputStyles, pageStyle, cardStyle } from "../styles";
 
-const ForgotPassword = () => {
+interface RootState {
+  auth: {
+    profile: {
+      error: string | false | null;
+      loading: boolean;
+    };
+  };
+}
+
+const ForgotPassword = (): JSX.Element => {
   const firebase = useFirebase();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<Dispatch>();
 
-  const [email, setEmail] = useState("");
-  const [isValidEmail, setIsValidEmail] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [email, setEmail] = useState<string>("");
+  const [isValidEmail, setIsValidEmail] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | false | null>("");
+  const [success, setSuccess] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(true);
 
-  const errorProps = useSelector(({ auth }) => auth.profile.error);
-  const loadingProps = useSelector(({ auth }) => auth.profile.loading);
+  const errorProps = useSelector(({ auth }: RootState) => auth.profile.error);
+  const loadingProps = useSelector(
+    ({ auth }: RootState) => auth.profile.loading
+  );
 
   useEffect(() => setError(errorProps), [errorProps]);
   useEffect(() => setLoading(loadingProps), [loadingProps]);
@@ -39,23 +51,26 @@ const ForgotPassword = () => {
     }
   }, [errorProps, loadingProps]);
   useEffect(() => {
-    return () => clearAuthError()(dispatch);
+    return () => {
+      clearAuthError()(dispatch);
+    };
   }, [dispatch]);
 
-  const handleChange = e => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const val = e.target.value;
     setEmail(val);
     setIsValidEmail(/^[^\s@]+@[^\s@]+\.[^\s@]+\s*$/.test(val));
   };
 
-  const onSubmit = async e => {
+  const onSubmit = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ): Promise<void> => {
     e.preventDefault();
     setError("");
     await sendPasswordResetEmail(email)(firebase, dispatch);
   };
 
   return (
-    // Same page wrapper as AuthPage
     <Box sx={pageStyle}>
       <Box sx={cardStyle}>
         <Typography
@@ -101,7 +116,6 @@ const ForgotPassword = () => {
           </Collapse>
         )}
 
-        {/* Email input — same pill style as Login/SignUp */}
         <OutlinedInput
           placeholder="Enter your email"
           autoComplete="email"
@@ -119,7 +133,6 @@ const ForgotPassword = () => {
           }
         />
 
-        {/* Same pill button as Login/SignUp */}
         <Button
           variant="contained"
           color="primary"
@@ -185,27 +198,6 @@ const ForgotPassword = () => {
       </Box>
     </Box>
   );
-};
-
-const pageStyle = {
-  minHeight: "100vh",
-  background: "#f0f2f5",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  p: { xs: "16px", md: "24px 16px" },
-  fontFamily: "'Segoe UI', sans-serif",
-  boxSizing: "border-box"
-};
-
-const cardStyle = {
-  width: "100%",
-  maxWidth: 440,
-  background: "#fff",
-  borderRadius: "20px",
-  boxShadow: "0 28px 80px rgba(0,0,0,0.13)",
-  p: "48px 40px",
-  boxSizing: "border-box"
 };
 
 export default ForgotPassword;

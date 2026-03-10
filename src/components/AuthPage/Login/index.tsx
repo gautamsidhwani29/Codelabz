@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase } from "react-redux-firebase";
-import { useLocation } from "react-router-dom";
+import type { Dispatch } from "redux";
 import validator from "validator";
 import {
   Button,
@@ -25,40 +25,42 @@ import {
 } from "@mui/icons-material";
 import { clearAuthError, signIn } from "../../../store/actions";
 import SmButtons from "../smButton/smButtons";
-import ViewAlerts from "./ViewAlerts";
 import { inputStyles } from "../styles";
 import { Link } from "react-router-dom";
 
-const Login = () => {
+interface RootState {
+  auth: {
+    profile: {
+      loading: boolean;
+    };
+  };
+}
+
+const Login = (): JSX.Element => {
   const firebase = useFirebase();
-  const dispatch = useDispatch();
-  const location = useLocation();
+  const dispatch = useDispatch<Dispatch>();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [signupMessage, setSignupMessage] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<boolean>(false);
+  const [emailErrorMsg, setEmailErrorMsg] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<boolean>(false);
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState<string>("");
 
-  const [emailError, setEmailError] = useState(false);
-  const [emailErrorMsg, setEmailErrorMsg] = useState("");
-  const [passwordError, setPasswordError] = useState(false);
-  const [passwordErrorMsg, setPasswordErrorMsg] = useState("");
+  const loadingProp = useSelector(
+    ({ auth }: RootState) => auth.profile.loading
+  );
 
-  const errorProp = useSelector(({ auth }) => auth.profile.error);
-  const loadingProp = useSelector(({ auth }) => auth.profile.loading);
-
-  useEffect(() => setError(errorProp), [errorProp]);
   useEffect(() => setLoading(loadingProp), [loadingProp]);
   useEffect(() => {
-    return () => clearAuthError()(dispatch);
+    return () => {
+      clearAuthError()(dispatch);
+    };
   }, [dispatch]);
-  useEffect(() => {
-    setSignupMessage(location.state?.successMessage || "");
-  }, [location.state]);
 
-  const validateEmail = () => {
+  const validateEmail = (): boolean => {
     if (validator.isEmpty(email)) {
       setEmailError(true);
       setEmailErrorMsg("Please enter your email!");
@@ -72,7 +74,7 @@ const Login = () => {
     return true;
   };
 
-  const validatePassword = () => {
+  const validatePassword = (): boolean => {
     if (validator.isEmpty(password)) {
       setPasswordError(true);
       setPasswordErrorMsg("Please enter your password!");
@@ -81,9 +83,10 @@ const Login = () => {
     return true;
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ): Promise<void> => {
     e.preventDefault();
-    setError("");
     if (validateEmail() && validatePassword()) {
       await signIn({ email, password })(firebase, dispatch);
     }
@@ -97,7 +100,6 @@ const Login = () => {
       >
         Login
       </Typography>
-      <ViewAlerts error={error} email={email} successMessage={signupMessage} />
       <TextField
         variant="outlined"
         autoFocus
@@ -148,7 +150,7 @@ const Login = () => {
             <InputAdornment position="end">
               <IconButton
                 onClick={() => setShowPassword(!showPassword)}
-                onMouseDown={e => e.preventDefault()}
+                onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
               >
                 {showPassword ? <Visibility /> : <VisibilityOff />}
               </IconButton>

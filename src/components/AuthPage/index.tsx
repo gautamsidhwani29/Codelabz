@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { UserIsNotAuthenticated } from "../../auth";
 import Login from "./Login";
@@ -7,24 +8,52 @@ import Box from "@mui/material/Box";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { authStyles } from "./styles";
+import toast from "react-hot-toast";
+import type { InjectedAuthRouterProps } from "redux-auth-wrapper/history4/redirect";
 
-const AuthPage = ({ type }) => {
-  const location = useLocation();
+interface AuthPageProps extends InjectedAuthRouterProps {
+  type?: string;
+}
 
-  const [isLogin, setIsLogin] = useState(
+interface LocationState {
+  mode?: string;
+}
+
+interface RootState {
+  auth: {
+    profile: {
+      error: string | false | null;
+    };
+  };
+}
+
+const AuthPage: React.FC<AuthPageProps> = ({ type }) => {
+  const location = useLocation<LocationState>();
+
+  const [isLogin, setIsLogin] = useState<boolean>(
     location.state?.mode === "signup" ? false : type !== "signup"
   );
+
   useEffect(() => {
     setIsLogin(location.state?.mode === "signup" ? false : type !== "signup");
   }, [type, location.state]);
+
+  const errorProp = useSelector(({ auth }: RootState) => auth.profile.error);
+
+  useEffect(() => {
+    if (errorProp && typeof errorProp === "string") {
+      toast.error(errorProp, { id: "auth-error" });
+    }
+  }, [errorProp]);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   if (isMobile) {
     return (
       <Box sx={authStyles.page}>
         <Box sx={authStyles.mobileCard}>
           {isLogin ? <Login /> : <SignUp />}
-
           <Box sx={authStyles.mobileSwitch}>
             {isLogin ? (
               <>
@@ -61,7 +90,6 @@ const AuthPage = ({ type }) => {
         <Box sx={authStyles.half}>
           <Login />
         </Box>
-
         <Box sx={authStyles.half}>
           <SignUp />
         </Box>
