@@ -122,13 +122,13 @@ const authStyles = {
 const inputStyles = {
 
   "& .MuiOutlinedInput-root": {
-    borderRadius: "50px",       
+    borderRadius: "50px",
     background: "#fff",
-    boxShadow: "none",          
+    boxShadow: "none",
     transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 
     "& fieldset": {
-      borderColor: "#e0e0e0",   
+      borderColor: "#e0e0e0",
       borderWidth: "1.5px",
     },
 
@@ -137,7 +137,7 @@ const inputStyles = {
     },
 
     "&.Mui-focused fieldset": {
-      borderColor: "#2563EB",  
+      borderColor: "#2563EB",
       borderWidth: "2px",
     },
     "&.Mui-focused": {
@@ -145,7 +145,7 @@ const inputStyles = {
     },
 
     "&.Mui-error fieldset": {
-      borderColor: "#ef4444",   
+      borderColor: "#ef4444",
     },
     "&.Mui-error": {
       boxShadow: "0 0 0 3px rgba(239,68,68,0.1)",
@@ -197,4 +197,24 @@ const iconSx = {
   }
 };
 
-export { authStyles, inputStyles, btnSx, iconSx };
+const pageStyle = {
+  minHeight: "100vh",
+  background: "#f0f2f5",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  p: { xs: "16px", md: "24px 16px" },
+  fontFamily: "'Segoe UI', sans-serif",
+  boxSizing: "border-box"
+};
+
+const cardStyle = {
+  width: "100%",
+  maxWidth: 440,
+  background: "#fff",
+  borderRadius: "20px",
+  boxShadow: "0 28px 80px rgba(0,0,0,0.13)",
+  p: "48px 40px",
+  boxSizing: "border-box"
+};
+export { authStyles, inputStyles, btnSx, iconSx, pageStyle, cardStyle };

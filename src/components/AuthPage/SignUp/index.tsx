@@ -18,37 +18,51 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase } from "react-redux-firebase";
 import validator from "validator";
+import type { Dispatch } from "redux";
 import { clearAuthError, signUp } from "../../../store/actions";
 import SmButtons from "../smButton/smButtons";
 import { inputStyles } from "../styles";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-const SignUp = () => {
+interface RootState {
+  auth: {
+    profile: {
+      error: string | false | null;
+      loading: boolean;
+    };
+  };
+}
+
+const SignUp = (): JSX.Element => {
+  const dispatch = useDispatch<Dispatch>();
   const firebase = useFirebase();
-  const dispatch = useDispatch();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreed, setAgreed] = useState(false);
-  const [agreedError, setAgreedError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
+  const [agreed, setAgreed] = useState<boolean>(false);
+  const [agreedError, setAgreedError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<boolean>(false);
+  const [emailErrorMsg, setEmailErrorMsg] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<boolean>(false);
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState<string>("");
+  const [confirmError, setConfirmError] = useState<boolean>(false);
+  const [confirmErrorMsg, setConfirmErrorMsg] = useState<string>("");
 
-  const [emailError, setEmailError] = useState(false);
-  const [emailErrorMsg, setEmailErrorMsg] = useState("");
-  const [passwordError, setPasswordError] = useState(false);
-  const [passwordErrorMsg, setPasswordErrorMsg] = useState("");
-  const [confirmError, setConfirmError] = useState(false);
-  const [confirmErrorMsg, setConfirmErrorMsg] = useState("");
-
-  const errorProp = useSelector(({ auth }) => auth.profile.error);
-  const loadingProp = useSelector(({ auth }) => auth.profile.loading);
+  const errorProp = useSelector(({ auth }: RootState) => auth.profile.error);
+  const loadingProp = useSelector(
+    ({ auth }: RootState) => auth.profile.loading
+  );
 
   useEffect(() => setLoading(loadingProp), [loadingProp]);
   useEffect(() => {
-    return () => clearAuthError()(dispatch);
+    return () => {
+      clearAuthError()(dispatch);
+    };
   }, [dispatch]);
 
   useEffect(() => {
@@ -60,7 +74,7 @@ const SignUp = () => {
     }
   }, [errorProp, loadingProp]);
 
-  const validateEmail = () => {
+  const validateEmail = (): boolean => {
     if (validator.isEmpty(email)) {
       setEmailError(true);
       setEmailErrorMsg("Please enter your email!");
@@ -74,7 +88,7 @@ const SignUp = () => {
     return true;
   };
 
-  const validatePassword = () => {
+  const validatePassword = (): boolean => {
     if (validator.isEmpty(password)) {
       setPasswordError(true);
       setPasswordErrorMsg("Please enter your password!");
@@ -98,7 +112,7 @@ const SignUp = () => {
     return true;
   };
 
-  const validateConfirmPassword = () => {
+  const validateConfirmPassword = (): boolean => {
     if (password !== confirmPassword) {
       setConfirmError(true);
       setConfirmErrorMsg("Passwords do not match!");
@@ -109,7 +123,7 @@ const SignUp = () => {
     return true;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     const emailOk = validateEmail();
     const passwordOk = validatePassword();
     const confirmOk = validateConfirmPassword();
@@ -183,7 +197,7 @@ const SignUp = () => {
             <InputAdornment position="end">
               <IconButton
                 onClick={() => setShowPassword(!showPassword)}
-                onMouseDown={e => e.preventDefault()}
+                onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
               >
                 {showPassword ? <Visibility /> : <VisibilityOff />}
               </IconButton>
@@ -218,7 +232,7 @@ const SignUp = () => {
             <InputAdornment position="end">
               <IconButton
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                onMouseDown={e => e.preventDefault()}
+                onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
               >
                 {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
               </IconButton>
