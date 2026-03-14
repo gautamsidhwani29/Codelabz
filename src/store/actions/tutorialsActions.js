@@ -6,6 +6,7 @@ import {
   isUserSubscribed
 } from "./";
 import _ from "lodash";
+import firebase from "firebase/compat/app";
 
 const tutorials_index = new Elasticlunr(
   "tutorial_id",
@@ -187,9 +188,11 @@ export const createTutorial =
       if (is_org) {
         const documentID = await setData("organization");
         history.push(`/tutorials/${owner}/${documentID}`);
+        return documentID;
       } else {
         const documentID = await setData("user");
         history.push(`/tutorials/${owner}/${documentID}`);
+        return documentID;
       }
       dispatch({ type: actions.CREATE_TUTORIAL_SUCCESS });
     } catch (e) {
@@ -685,5 +688,80 @@ export const deleteNotification =
       dispatch({ type: actions.DELETE_NOTIFICATION, payload: notification_id });
     } catch (e) {
       console.log(e.message);
+    }
+  };
+
+export const uploadTutorialMedia =
+  (owner, tutorial_id, file, mediaType) =>
+    async (firebase, firestore, dispatch) => {
+      try {
+        dispatch({ type: actions.TUTORIAL_MEDIA_UPLOAD_START });
+
+        const storagePath = `tutorials/${owner}/${tutorial_id}/media/${mediaType}/${file.name}`;
+        const storageRef = firebase.storage().ref().child(storagePath);
+        const snapshot = await storageRef.put(file);
+        const downloadURL = await snapshot.ref.getDownloadURL();
+
+        const mediaDoc = {
+          name: file.name,
+          type: mediaType,
+          url: downloadURL,
+          thumbnail: mediaType === "image" ? downloadURL : null,
+          size: file.size,
+          uploadedAt: firestore.FieldValue.serverTimestamp()
+        };
+
+        await firestore
+          .collection("tutorials")
+          .doc(tutorial_id)
+          .collection("media")
+          .add(mediaDoc);
+
+        dispatch({ type: actions.TUTORIAL_MEDIA_UPLOAD_SUCCESS });
+      } catch (e) {
+        dispatch({ type: actions.TUTORIAL_MEDIA_UPLOAD_FAIL, payload: e.message });
+      }
+    };
+
+
+export const deleteTutorialMedia =
+  (owner, tutorial_id, mediaId, storagePath) =>
+    async (firebase, firestore, dispatch) => {
+      try {
+        dispatch({ type: actions.TUTORIAL_MEDIA_DELETE_START });
+
+        // Delete from Storage
+        await firebase.storage().ref().child(storagePath).delete();
+
+        // Delete metadata from Firestore
+        await firestore
+          .collection("tutorials")
+          .doc(tutorial_id)
+          .collection("media")
+          .doc(mediaId)
+          .delete();
+
+        dispatch({ type: actions.TUTORIAL_MEDIA_DELETE_SUCCESS });
+      } catch (e) {
+        dispatch({
+          type: actions.TUTORIAL_MEDIA_DELETE_FAIL,
+          payload: e.message
+        });
+      }
+    };
+
+export const getTutorialMedia =
+  (tutorial_id) => async (firestore, dispatch) => {
+    try {
+      const mediaSnapshot = await firestore
+        .collection("tutorials")
+        .doc(tutorial_id)
+        .collection("media")
+        .get();
+
+      return mediaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      console.log("GET_TUTORIAL_MEDIA_FAIL", e.message);
+      return [];
     }
   };

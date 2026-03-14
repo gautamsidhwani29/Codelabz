@@ -9,6 +9,8 @@ import Grid from "@mui/material/Grid";
 import useStyles from "./styles";
 import StepsBar from "./StepBar";
 import useWindowSize from "../../helpers/customHooks/useWindowSize";
+import { getTutorialMedia } from "../../store/actions/tutorialsActions";
+
 import {
   getTutorialData,
   getTutorialSteps,
@@ -26,6 +28,8 @@ function TutorialPage({ background = "white", textColor = "black" }) {
   const windowSize = useWindowSize();
   const [openMenu, setOpen] = useState(false);
   const [commentsArray, setCommentsArray] = useState([]);
+  const [tutorialMedia, setTutorialMedia] = useState([]);
+  
   const toggleSlider = () => {
     setOpen(!openMenu);
   };
@@ -56,6 +60,14 @@ function TutorialPage({ background = "white", textColor = "black" }) {
       }
     }) => loading
   );
+
+  useEffect(() => {
+    if (id) {
+      getTutorialMedia(id)(firestore, dispatch).then(media => {
+        setTutorialMedia(media);
+      });
+    }
+  }, [id]);
 
   const postDetails = {
     id: tutorial?.tutorial_id,
@@ -141,7 +153,7 @@ function TutorialPage({ background = "white", textColor = "black" }) {
           xs={6}
         >
           <PostDetails details={postDetails} />
-          <Tutorial steps={steps} />
+          <Tutorial steps={steps} tutorialMedia={tutorialMedia}/>
           <CommentBox
             commentsArray={commentsArray}
             onAddComment={handleAddComment}
