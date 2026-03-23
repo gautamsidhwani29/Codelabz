@@ -1,20 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AppstoreAddOutlined } from "@ant-design/icons";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createTutorial, getProfileData } from "../../../store/actions";
-import { uploadTutorialMedia } from "../../../store/actions/tutorialsActions";
 import { useFirebase, useFirestore } from "react-redux-firebase";
 import { useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
-import { Alert, Box, Chip, CircularProgress, Tooltip } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Chip,
+  LinearProgress,
+  Tooltip,
+  Typography
+} from "@mui/material";
 import TextField from "@mui/material/TextField";
-import Divider from "@mui/material/Divider";
 import { IconButton } from "@mui/material";
 import Modal from "@mui/material/Modal";
-import Avatar from "@mui/material/Avatar";
 import { makeStyles } from "@mui/styles";
-import { deepPurple } from "@mui/material/colors";
-import { Typography } from "@mui/material";
 import ImageIcon from "@mui/icons-material/Image";
 import DescriptionIcon from "@mui/icons-material/Description";
 import MovieIcon from "@mui/icons-material/Movie";
@@ -24,18 +25,6 @@ import { common } from "@mui/material/colors";
 import CloseIcon from "@mui/icons-material/Close";
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    display: "flex",
-    paddingTop: "8px",
-    paddingBottom: "10px"
-  },
-  item: {
-    margin: "10px"
-  },
-  purple: {
-    color: deepPurple[700],
-    backgroundColor: deepPurple[500]
-  },
   tagsContainer: {
     display: "flex",
     flexWrap: "wrap",
@@ -54,8 +43,6 @@ const useStyles = makeStyles(theme => ({
 const NewTutorial = ({
   viewModal,
   onSidebarClick,
-  viewCallback,
-  active,
   profile
 }) => {
   const firebase = useFirebase();
@@ -75,46 +62,29 @@ const NewTutorial = ({
     tags: []
   });
 
-  // Media state
-  const [mediaFiles, setMediaFiles] = useState([]); // { file, type, preview }
+  const [mediaFiles, setMediaFiles] = useState([]);
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
 
-  // Hidden file input refs for each media type
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
   const docInputRef = useRef(null);
 
   const loadingProp = useSelector(
-    ({
-      tutorials: {
-        create: { loading }
-      }
-    }) => loading
+    ({ tutorials: { create: { loading } } }) => loading
   );
   const errorProp = useSelector(
-    ({
-      tutorials: {
-        create: { error }
-      }
-    }) => error
+    ({ tutorials: { create: { error } } }) => error
   );
 
-  useEffect(() => {
-    setLoading(loadingProp);
-  }, [loadingProp]);
-  useEffect(() => {
-    setError(errorProp);
-  }, [errorProp]);
+  useEffect(() => { setLoading(loadingProp); }, [loadingProp]);
+  useEffect(() => { setError(errorProp); }, [errorProp]);
   useEffect(() => {
     setformValue(prev => ({ ...prev, tags }));
   }, [tags]);
 
   const organizations = useSelector(
-    ({
-      profile: {
-        data: { organizations }
-      }
-    }) => organizations
+    ({ profile: { data: { organizations } } }) => organizations
   );
 
   useEffect(() => {
@@ -123,47 +93,84 @@ const NewTutorial = ({
     }
   }, [firestore, firebase, dispatch, organizations]);
 
-  const userHandle = useSelector(
-    ({
-      firebase: {
-        profile: { handle }
-      }
-    }) => handle
-  );
+  const revokeAllPreviews = (files) => {
+    files.forEach(m => m.preview && URL.revokeObjectURL(m.preview));
+  };
 
-  useEffect(() => {
+  const resetForm = () => {
     setTags([]);
     setNewTag("");
     setMediaFiles([]);
+    setUploadProgress({});
     setformValue({ title: "", summary: "", owner: "", tags: [] });
+  };
+
+  useEffect(() => {
+    resetForm();
     setVisible(viewModal);
   }, [viewModal]);
 
-  // Handle file selection for any media type
   const handleFileSelect = (e, mediaType) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Create preview URL for images
     const preview = mediaType === "image" ? URL.createObjectURL(file) : null;
-
     setMediaFiles(prev => [
       ...prev,
       { file, type: mediaType, preview, name: file.name }
     ]);
-
-    // Reset input so same file can be selected again
     e.target.value = "";
   };
 
-  // Remove a media file before submitting
   const handleRemoveMedia = index => {
     setMediaFiles(prev => {
       const updated = [...prev];
-      // Revoke preview URL to free memory
       if (updated[index].preview) URL.revokeObjectURL(updated[index].preview);
       updated.splice(index, 1);
       return updated;
+    });
+    setUploadProgress(prev => {
+      const updated = { ...prev };
+      delete updated[index];
+      return updated;
+    });
+  };
+
+  const uploadWithProgress = (owner, tutorial_id, file, mediaType, index) => {
+    return new Promise((resolve, reject) => {
+      const storagePath = `tutorials/${owner}/${tutorial_id}/media/${mediaType}/${file.name}`;
+      const storageRef = firebase.storage().ref().child(storagePath);
+      const uploadTask = storageRef.put(file);
+
+      uploadTask.on(
+        "state_changed",
+        snapshot => {
+          const progress = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setUploadProgress(prev => ({ ...prev, [index]: progress }));
+        },
+        error => {
+          reject(error);
+        },
+        async () => {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+          const mediaDoc = {
+            name: file.name,
+            type: mediaType,
+            url: downloadURL,
+            thumbnail: mediaType === "image" ? downloadURL : null,
+            size: file.size,
+            uploadedAt: firestore.FieldValue.serverTimestamp()
+          };
+          await firestore
+            .collection("tutorials")
+            .doc(tutorial_id)
+            .collection("media")
+            .add(mediaDoc);
+          setUploadProgress(prev => ({ ...prev, [index]: 100 }));
+          resolve(downloadURL);
+        }
+      );
     });
   };
 
@@ -180,21 +187,28 @@ const NewTutorial = ({
     const tutorial_id = await createTutorial(tutorialData)(
       firebase,
       firestore,
-      dispatch,
-      history
+      dispatch
     );
 
     if (tutorial_id && mediaFiles.length > 0) {
       setMediaUploading(true);
-      for (const media of mediaFiles) {
-        await uploadTutorialMedia(
+      for (let i = 0; i < mediaFiles.length; i++) {
+        const media = mediaFiles[i];
+        await uploadWithProgress(
           formValue.owner,
           tutorial_id,
           media.file,
-          media.type
-        )(firebase, firestore, dispatch);
+          media.type,
+          i
+        );
       }
       setMediaUploading(false);
+    }
+
+    revokeAllPreviews(mediaFiles);
+
+    if (tutorial_id) {
+      history.push(`/tutorials/${formValue.owner}/${tutorial_id}`);
     }
   };
 
@@ -251,33 +265,26 @@ const NewTutorial = ({
         }}
       >
         {error && (
-          <Alert message={""} type="error" closable="true" className="mb-24">
-            description={"Tutorial Creation Failed"}
+          <Alert severity="error" className="mb-24">
+            Tutorial Creation Failed
           </Alert>
         )}
 
         <Typography variant="h5">Create a Tutorial</Typography>
 
         <Box sx={{ py: 2, width: "50%" }}>
-          <Typography>
-            <Select
-              options={organizations?.map(org => ({
-                value: org.org_handle,
-                label: org.org_name
-              }))}
-              onChange={data => {
-                onOwnerChange(data.value);
-              }}
-              id="orgSelect"
-            />
-          </Typography>
+          <Select
+            options={organizations?.map(org => ({
+              value: org.org_handle,
+              label: org.org_name
+            }))}
+            onChange={data => { onOwnerChange(data.value); }}
+            id="orgSelect"
+          />
         </Box>
 
         <form id="tutorialNewForm">
           <TextField
-            prefix={
-              <AppstoreAddOutlined style={{ color: "rgba(0,0,0,.25)" }} />
-            }
             placeholder="Title of the Tutorial"
             autoComplete="title"
             name="title"
@@ -290,9 +297,6 @@ const NewTutorial = ({
           />
 
           <TextField
-            prefix={
-              <AppstoreAddOutlined style={{ color: "rgba(0,0,0,.25)" }} />
-            }
             fullWidth
             variant="outlined"
             name="summary"
@@ -333,13 +337,11 @@ const NewTutorial = ({
             ))}
           </div>
 
-          {/* ── Media Upload Buttons ── */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
             <Typography variant="body2" color="text.secondary">
               Attach media:
             </Typography>
 
-            {/* Image upload */}
             <Tooltip title="Upload Image">
               <IconButton onClick={() => imageInputRef.current.click()}>
                 <ImageIcon color="primary" />
@@ -353,7 +355,6 @@ const NewTutorial = ({
               onChange={e => handleFileSelect(e, "image")}
             />
 
-            {/* Video upload */}
             <Tooltip title="Upload Video">
               <IconButton onClick={() => videoInputRef.current.click()}>
                 <MovieIcon color="secondary" />
@@ -367,7 +368,6 @@ const NewTutorial = ({
               onChange={e => handleFileSelect(e, "video")}
             />
 
-            {/* Document upload */}
             <Tooltip title="Upload Document">
               <IconButton onClick={() => docInputRef.current.click()}>
                 <DescriptionIcon color="action" />
@@ -382,7 +382,6 @@ const NewTutorial = ({
             />
           </Box>
 
-          {/* ── Media Preview ── */}
           {mediaFiles.length > 0 && (
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -392,54 +391,69 @@ const NewTutorial = ({
                 <Box
                   key={index}
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
                     mb: 1,
                     p: 1,
                     border: "1px solid #e0e0e0",
                     borderRadius: "8px"
                   }}
                 >
-                  {/* Image preview thumbnail */}
-                  {media.type === "image" && media.preview && (
-                    <img
-                      src={media.preview}
-                      alt={media.name}
-                      style={{
-                        width: 48,
-                        height: 48,
-                        objectFit: "cover",
-                        borderRadius: 4
-                      }}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {media.type === "image" && media.preview && (
+                      <img
+                        src={media.preview}
+                        alt={media.name}
+                        style={{
+                          width: 48,
+                          height: 48,
+                          objectFit: "cover",
+                          borderRadius: 4
+                        }}
+                      />
+                    )}
+                    {media.type === "video" && <MovieIcon color="secondary" />}
+                    {media.type === "document" && (
+                      <DescriptionIcon color="action" />
+                    )}
+
+                    <Typography variant="body2" sx={{ flex: 1 }} noWrap>
+                      {media.name}
+                    </Typography>
+
+                    <Chip
+                      label={media.type}
+                      size="small"
+                      variant="outlined"
+                      sx={{ textTransform: "capitalize" }}
                     />
+
+                    {!mediaUploading && (
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveMedia(index)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  {mediaUploading && uploadProgress[index] !== undefined && (
+                    <Box sx={{ mt: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={uploadProgress[index]}
+                        sx={{ borderRadius: 4 }}
+                      />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mt: 0.5, display: "block" }}
+                      >
+                        {uploadProgress[index] < 100
+                          ? `Uploading... ${uploadProgress[index]}%`
+                          : "Upload complete"}
+                      </Typography>
+                    </Box>
                   )}
-
-                  {/* Video icon */}
-                  {media.type === "video" && <MovieIcon color="secondary" />}
-
-                  {/* Document icon */}
-                  {media.type === "document" && (
-                    <DescriptionIcon color="action" />
-                  )}
-
-                  <Typography variant="body2" sx={{ flex: 1 }} noWrap>
-                    {media.name}
-                  </Typography>
-
-                  <Chip
-                    label={media.type}
-                    size="small"
-                    variant="outlined"
-                    sx={{ textTransform: "capitalize" }}
-                  />
-
-                  <IconButton
-                    size="small"
-                    onClick={() => handleRemoveMedia(index)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
                 </Box>
               ))}
             </Box>
@@ -450,13 +464,12 @@ const NewTutorial = ({
               <Button
                 key="back"
                 onClick={() => {
+                  revokeAllPreviews(mediaFiles);
                   onSidebarClick();
-                  setTags([]);
-                  setNewTag("");
-                  setMediaFiles([]);
-                  setformValue({ title: "", summary: "", owner: "", tags: [] });
+                  resetForm();
                 }}
                 id="cancelAddTutorial"
+                disabled={mediaUploading}
               >
                 Cancel
               </Button>
@@ -466,7 +479,6 @@ const NewTutorial = ({
                 variant="contained"
                 color="secondary"
                 htmlType="submit"
-                loading={loading}
                 onClick={e => onSubmit(e)}
                 data-testid="newTutorialSubmit"
                 sx={{
@@ -479,10 +491,11 @@ const NewTutorial = ({
                   formValue.title === "" ||
                   formValue.summary === "" ||
                   formValue.owner === "" ||
+                  loading ||
                   mediaUploading
                 }
               >
-                {loading ? "Creating..." : "Create"}
+                {loading || mediaUploading ? "Creating..." : "Create"}
               </Button>
             </div>
           </div>

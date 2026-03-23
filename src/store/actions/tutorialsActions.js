@@ -6,7 +6,6 @@ import {
   isUserSubscribed
 } from "./";
 import _ from "lodash";
-import firebase from "firebase/compat/app";
 
 const tutorials_index = new Elasticlunr(
   "tutorial_id",
@@ -142,7 +141,7 @@ export const clearTutorialsBasicData = () => dispatch =>
   dispatch({ type: actions.CLEAR_TUTORIALS_BASIC_STATE });
 
 export const createTutorial =
-  tutorialData => async (firebase, firestore, dispatch, history) => {
+  tutorialData => async (firebase, firestore, dispatch) => {
     try {
       dispatch({ type: actions.CREATE_TUTORIAL_START });
       const { title, summary, owner, created_by, is_org, tags } = tutorialData;
@@ -187,13 +186,12 @@ export const createTutorial =
 
       if (is_org) {
         const documentID = await setData("organization");
-        history.push(`/tutorials/${owner}/${documentID}`);
         return documentID;
       } else {
         const documentID = await setData("user");
-        history.push(`/tutorials/${owner}/${documentID}`);
-        return documentID;
+        return documentID
       }
+
       dispatch({ type: actions.CREATE_TUTORIAL_SUCCESS });
     } catch (e) {
       console.error("CREATE_TUTORIAL_FAIL", e);
