@@ -1,14 +1,22 @@
-FROM node:22-alpine AS builder
-
+FROM node:22-alpine AS base
 WORKDIR /app
 
-# Install dependencies first (cached layer)
+# Copy only package files to leverage Docker layer caching
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
 
-# Copy source code
+# Network-resilient install (fails gracefully, skips slow audits)
+RUN npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
+
+FROM base AS dev
+
+EXPOSE 5173
+# Start Vite and expose host so it can be accessed outside the container
+CMD ["npm", "run", "dev", "--", "--host"]
+
+FROM base AS builder
 COPY . .
 
+# Build-time variables required by Vite for static asset generation
 ARG VITE_APP_FIREBASE_API_KEY
 ARG VITE_APP_AUTH_DOMAIN
 ARG VITE_APP_FIREBASE_PROJECT_ID
@@ -34,16 +42,14 @@ ENV VITE_APP_USE_EMULATOR=$VITE_APP_USE_EMULATOR
 RUN npm run build
 
 FROM node:22-alpine AS production
-
 WORKDIR /app
 
 RUN npm install -g serve
-
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
-# Health check — verifies the app is responding
+# Health check to verify the app is responding
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:3000 || exit 1
 
