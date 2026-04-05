@@ -1,30 +1,30 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Collapse,
-  Divider,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography
-} from "@mui/material";
-import {
-  Close as CloseIcon,
-  LockOutlined,
-  MailOutlined,
-  Visibility,
-  VisibilityOff
-} from "@mui/icons-material";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase } from "react-redux-firebase";
 import validator from "validator";
+import {
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Box,
+  Typography,
+  Alert,
+  Collapse,
+} from "@mui/material";
+import {
+  LockOutlined,
+  MailOutlined,
+  ShieldOutlined,
+  Visibility,
+  VisibilityOff,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 import { clearAuthError, signUp } from "../../../store/actions";
 import SmButtons from "../smButton/smButtons";
-import { inputStyles } from "../styles";
-import { useState, useEffect } from "react";
+import { inputStyles, authStyles } from "../styles";
 
 const SignUp = () => {
   const firebase = useFirebase();
@@ -53,10 +53,7 @@ const SignUp = () => {
 
   useEffect(() => setError(errorProp), [errorProp]);
   useEffect(() => setLoading(loadingProp), [loadingProp]);
-  useEffect(() => {
-    return () => clearAuthError()(dispatch);
-  }, [dispatch]);
-
+  useEffect(() => () => clearAuthError()(dispatch), [dispatch]);
   useEffect(() => {
     if (errorProp === false && loadingProp === false) {
       setEmail("");
@@ -92,12 +89,12 @@ const SignUp = () => {
         minLowercase: 1,
         minUppercase: 1,
         minNumbers: 1,
-        minSymbols: 1
+        minSymbols: 1,
       })
     ) {
       setPasswordError(true);
       setPasswordErrorMsg(
-        "Password must be 8+ chars with uppercase, lowercase, number & symbol."
+        "8+ chars with uppercase, lowercase, number & symbol."
       );
       return false;
     }
@@ -136,159 +133,187 @@ const SignUp = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Typography
-        sx={{ textAlign: "center", fontWeight: 700, mb: 2, fontSize: "1.8rem" }}
-      >
-        Create Account
-      </Typography>
+    <Box>
+      {/* Error alert */}
       {error && (
         <Collapse in={errorOpen}>
           <Alert
             severity="error"
+            sx={{ mb: 2, borderRadius: "8px", fontSize: "13px" }}
             action={
               <IconButton size="small" onClick={() => setErrorOpen(false)}>
                 <CloseIcon fontSize="inherit" />
               </IconButton>
             }
-            sx={{ mb: 2 }}
           >
             {error}
           </Alert>
         </Collapse>
       )}
+
+      {/* Email */}
+      <Typography sx={authStyles.fieldLabel}>Email address</Typography>
       <TextField
         variant="outlined"
+        fullWidth
         placeholder="Enter your email"
         value={email}
-        onChange={e => setEmail(e.target.value)}
-        onFocus={() => {
-          setEmailError(false);
-          setEmailErrorMsg("");
-        }}
-        helperText={emailError ? emailErrorMsg : null}
+        onChange={(e) => setEmail(e.target.value)}
+        onFocus={() => { setEmailError(false); setEmailErrorMsg(""); }}
         error={emailError}
-        fullWidth
+        helperText={emailError ? emailErrorMsg : undefined}
         autoComplete="email"
         required
         data-testid="signUpEmail"
-        sx={{ ...inputStyles, mb: "15px", mt: "4px" }}
+        sx={inputStyles}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <MailOutlined style={{ color: "rgba(0,0,0,.25)" }} />
+              <MailOutlined style={{ color: "#9ca3af", fontSize: 18 }} />
             </InputAdornment>
-          )
+          ),
         }}
       />
 
+      {/* Password */}
+      <Typography sx={authStyles.fieldLabel}>Create password</Typography>
       <TextField
         variant="outlined"
-        value={password}
-        placeholder="Enter your password"
-        onChange={e => setPassword(e.target.value)}
-        onFocus={() => {
-          setPasswordError(false);
-          setPasswordErrorMsg("");
-        }}
-        helperText={passwordError ? passwordErrorMsg : null}
-        error={passwordError}
         fullWidth
-        required
+        placeholder="Min. 8 chars, uppercase &amp; symbol"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        onFocus={() => { setPasswordError(false); setPasswordErrorMsg(""); }}
+        error={passwordError}
+        helperText={passwordError ? passwordErrorMsg : undefined}
         autoComplete="new-password"
         type={showPassword ? "text" : "password"}
-        data-testid="signUpPassword"
-        sx={{ ...inputStyles, mb: "15px" }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowPassword(!showPassword)}
-                onMouseDown={e => e.preventDefault()}
-              >
-                {showPassword ? <Visibility /> : <VisibilityOff />}
-              </IconButton>
-            </InputAdornment>
-          )
-        }}
-      />
-
-      <TextField
-        placeholder="Confirm your password"
-        variant="outlined"
-        value={confirmPassword}
-        onChange={e => setConfirmPassword(e.target.value)}
-        onFocus={() => {
-          setConfirmError(false);
-          setConfirmErrorMsg("");
-        }}
-        helperText={confirmError ? confirmErrorMsg : null}
-        error={confirmError}
-        fullWidth
         required
-        type={showConfirmPassword ? "text" : "password"}
-        data-testid="signUpConfirmPassword"
-        sx={{ ...inputStyles, mb: "15px" }}
+        data-testid="signUpPassword"
+        sx={inputStyles}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />
+              <LockOutlined style={{ color: "#9ca3af", fontSize: 18 }} />
             </InputAdornment>
           ),
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                onMouseDown={e => e.preventDefault()}
+                onClick={() => setShowPassword((s) => !s)}
+                onMouseDown={(e) => e.preventDefault()}
+                edge="end"
+                size="small"
               >
-                {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
+                {showPassword
+                  ? <Visibility style={{ fontSize: 18, color: "#9ca3af" }} />
+                  : <VisibilityOff style={{ fontSize: 18, color: "#9ca3af" }} />}
               </IconButton>
             </InputAdornment>
-          )
+          ),
         }}
       />
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={agreed}
-            onChange={() => {
-              setAgreed(!agreed);
-              setAgreedError(false);
-            }}
-            color="primary"
-            data-testid="TnC"
-          />
-        }
-        label="By creating an account, you agree to our terms and conditions."
+      {/* Confirm password */}
+      <Typography sx={authStyles.fieldLabel}>Confirm password</Typography>
+      <TextField
+        variant="outlined"
+        fullWidth
+        placeholder="Repeat your password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        onFocus={() => { setConfirmError(false); setConfirmErrorMsg(""); }}
+        error={confirmError}
+        helperText={confirmError ? confirmErrorMsg : undefined}
+        autoComplete="new-password"
+        type={showConfirmPassword ? "text" : "password"}
+        required
+        data-testid="signUpConfirmPassword"
+        sx={inputStyles}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <ShieldOutlined style={{ color: "#9ca3af", fontSize: 18 }} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={() => setShowConfirmPassword((s) => !s)}
+                onMouseDown={(e) => e.preventDefault()}
+                edge="end"
+                size="small"
+              >
+                {showConfirmPassword
+                  ? <Visibility style={{ fontSize: 18, color: "#9ca3af" }} />
+                  : <VisibilityOff style={{ fontSize: 18, color: "#9ca3af" }} />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
       />
+
+      {/* Terms */}
+      <Box sx={authStyles.termsRow}>
+        <Checkbox
+          checked={agreed}
+          onChange={() => { setAgreed((a) => !a); setAgreedError(false); }}
+          size="small"
+          data-testid="TnC"
+          sx={{
+            padding: "2px 6px 0 0",
+            color: agreedError ? "#dc2626" : "#d1d5db",
+            "&.Mui-checked": { color: "#2563eb" },
+          }}
+        />
+        <Typography sx={{ fontSize: "12px", color: "#4b5563", lineHeight: 1.5 }}>
+          By creating an account, you agree to our{" "}
+          <Box
+            component="a"
+            href="#"
+            sx={{ color: "#2563eb", fontWeight: 500, textDecoration: "none",
+              "&:hover": { textDecoration: "underline" } }}
+          >
+            terms and conditions
+          </Box>
+          .
+        </Typography>
+      </Box>
 
       {agreedError && !agreed && (
-        <div
-          style={{ color: "red", fontSize: "0.82rem", padding: "4px 0 8px" }}
-        >
-          You must agree to the terms and conditions to register.
-        </div>
+        <Typography sx={{ ...authStyles.errorText, mb: "12px" }}>
+          You must agree to the terms to register.
+        </Typography>
       )}
 
+      {/* Submit */}
       <Button
         variant="contained"
-        color="primary"
         fullWidth
         disabled={loading}
         onClick={handleSubmit}
         data-testid="signUpButton"
-        sx={{ color: "white", borderRadius: "30px", padding: "10px", mt: 1 }}
+        sx={{
+          background: "#2563eb",
+          borderRadius: "8px",
+          padding: "11px",
+          fontSize: "13px",
+          fontWeight: 700,
+          letterSpacing: "0.07em",
+          textTransform: "uppercase",
+          boxShadow: "none",
+          "&:hover": { background: "#1d4ed8", boxShadow: "none" },
+          "&:active": { background: "#1e40af" },
+          "&.Mui-disabled": { background: "#93c5fd", color: "#fff" },
+        }}
       >
-        {loading ? "Creating your account..." : "Create an account"}
+        {loading ? "Creating account…" : "Create an Account"}
       </Button>
-      <Divider sx={{ padding: "10px", mx: 0 }}>OR</Divider>
 
+      {/* Divider */}
+      <Box sx={authStyles.divider}>or continue with</Box>
+
+      {/* Social */}
       <SmButtons />
     </Box>
   );

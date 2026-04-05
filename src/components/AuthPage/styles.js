@@ -1,200 +1,281 @@
-const authStyles = {
+export const authStyles = {
   page: {
     minHeight: "100vh",
-    background: "#f0f2f5",
+    background: "#f0f4f8",
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    p: { xs: "16px", md: "24px 16px" },
-    fontFamily: "'Segoe UI', sans-serif",
-    overflowX: "hidden",
-    overFlo: "hidden",
-    boxSizing: "border-box"
+    padding: { xs: "16px", sm: "32px 16px" },
+    boxSizing: "border-box",
+    fontFamily: "'Segoe UI', system-ui, sans-serif",
   },
 
   card: {
-    position: "relative",
-    display: "flex",
     width: "100%",
-    maxWidth: 900,
-    minHeight: 560,
-    borderRadius: "20px",
-    overflow: "hidden",
-    boxShadow: "0 28px 80px rgba(0,0,0,0.13)",
-    background: "#fff",
-  },
-
-  half: {
-    width: "50%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-
-    p: "48px 40px",
-    background: "#fff",
-    boxSizing: "border-box",
-    overflowY: "auto",
-  },
-
-  mobileCard: {
-    width: "100%",
-    maxWidth: 440,
+    maxWidth: 480,
     background: "#fff",
     borderRadius: "16px",
-    boxShadow: "0 8px 40px rgba(0,0,0,0.10)",
-    p: "36px 24px 28px",
+    border: "0.5px solid #d4dbe6",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+    padding: { xs: "28px 20px 32px", sm: "36px 40px 40px" },
     boxSizing: "border-box",
   },
 
-  mobileSwitch: {
-    textAlign: "center",
-    mt: 3,
-    fontSize: "0.875rem",
-    color: "#6b7280",
+  logoWrap: {
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "14px",
   },
 
-  mobileSwitchLink: {
-    color: "#2563EB",
-    fontWeight: 600,
+  logoBox: {
+    width: 52,
+    height: 52,
+    background: "#2563eb",
+    borderRadius: "12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+ heading: {
+    fontSize: "32px", 
+    fontWeight: 700,  
+    color: "#111827", 
+    textAlign: "center",
+    marginTop: "16px", 
+    marginBottom: "8px", 
+    letterSpacing: "-0.5px", 
+  },
+  
+  subheading: {
+    fontSize: "16px", 
+    fontWeight: 400,
+    color: "#6b7280", 
+    textAlign: "center",
+    marginBottom: "32px", 
+  },
+
+  tabRow: {
+    display: "flex",
+    background: "#f3f4f6",
+    borderRadius: "8px",
+    padding: "3px",
+    marginBottom: "28px",
+  },
+
+  tab: (active) => ({
+    flex: 1,
+    padding: "8px 0",
+    fontSize: "14px",
+    fontWeight: active ? 600 : 400,
+    color: active ? "#111827" : "#6b7280",
+    background: active ? "#fff" : "transparent",
+    border: active ? "0.5px solid #d4dbe6" : "none",
+    borderRadius: "6px",
     cursor: "pointer",
+    textAlign: "center",
+    transition: "all .18s ease",
+    boxShadow: active ? "0 1px 4px rgba(0,0,0,0.07)" : "none",
+    outline: "none",
+  }),
+
+  fieldLabel: {
+    fontSize: "11px",
+    fontWeight: 600,
+    letterSpacing: "0.07em",
+    color: "#6b7280",
+    marginBottom: "6px",
+    textTransform: "uppercase",
+  },
+
+  submitBtn: {
+    width: "100%",
+    padding: "12px",
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: 700,
+    letterSpacing: "0.07em",
+    cursor: "pointer",
+    transition: "background .15s",
+    marginTop: "4px",
+    "&:hover": { background: "#1d4ed8" },
+    "&:active": { background: "#1e40af" },
+    "&:disabled": { background: "#93c5fd", cursor: "not-allowed" },
+  },
+
+  divider: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    margin: "20px 0",
+    fontSize: "11px",
+    fontWeight: 600,
+    letterSpacing: "0.07em",
+    color: "#9ca3af",
+    textTransform: "uppercase",
+
+    "&::before, &::after": {
+      content: '""',
+      flex: 1,
+      height: "0.5px",
+      background: "#e5e7eb",
+    },
+  },
+
+  socialsRow: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+  },
+
+  socialBtn: {
+    width: 44,
+    height: 44,
+    border: "1px solid #e5e7eb",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#fff",
+    cursor: "pointer",
+    transition: "border-color .15s, background .15s",
+    padding: 0,
+    "&:hover": {
+      borderColor: "#d1d5db",
+      background: "#f9fafb",
+    },
+  },
+
+  rowSplit: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+    gap: "6px",
+  },
+
+  checkLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontSize: "13px",
+    color: "#4b5563",
+    cursor: "pointer",
+    userSelect: "none",
+  },
+
+  forgotLink: {
+    fontSize: "13px",
+    color: "#2563eb",
+    fontWeight: 500,
+    textDecoration: "none",
     "&:hover": { textDecoration: "underline" },
   },
 
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "50%",
-    height: "100%",
-    background: "linear-gradient(150deg, #2563EB 0%, #1741b0 100%)",
-    zIndex: 10,
-    transition: "transform 0.6s cubic-bezier(0.77, 0, 0.18, 1)",
-    borderRadius: "16px",
-  },
-
-  face: {
-    position: "absolute",
-    inset: 0,
+  termsRow: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "opacity 0.3s ease",
+    alignItems: "flex-start",
+    gap: "8px",
+    marginBottom: "16px",
+    fontSize: "12px",
+    color: "#4b5563",
+    lineHeight: 1.5,
   },
 
-  overlayInner: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
-    px: "36px",
-    color: "#fff",
+  termsLink: {
+    color: "#2563eb",
+    fontWeight: 500,
+    textDecoration: "none",
+    "&:hover": { textDecoration: "underline" },
   },
 
-  overlayTitle: {
-    fontSize: "28px",
-    fontWeight: 700,
-    m: "0 0 16px 0",
-    color: "#fff",
-  },
-
-  overlaySub: {
-    fontSize: "14px",
-    lineHeight: 1.65,
-    color: "rgba(255,255,255,0.85)",
-    m: "0 0 32px 0",
-    maxWidth: "230px",
-  },
-
-  overlayBtn: {
-    padding: "11px 36px",
-    background: "transparent",
-    color: "#fff",
-    border: "2px solid rgba(255,255,255,0.8)",
-    borderRadius: "24px",
-    fontWeight: 700,
-    fontSize: "13px",
-    letterSpacing: "0.1em",
-    cursor: "pointer",
-    "&:hover": { background: "rgba(255,255,255,0.15)" },
+  errorText: {
+    fontSize: "11px",
+    color: "#dc2626",
+    marginTop: "4px",
   },
 };
 
-const inputStyles = {
+export const inputStyles = {
+  mb: "16px",
 
   "& .MuiOutlinedInput-root": {
-    borderRadius: "50px",       
+    borderRadius: "8px",
     background: "#fff",
-    boxShadow: "none",          
-    transition: "box-shadow 0.2s ease, border-color 0.2s ease",
+    fontSize: "14px",
+    transition: "box-shadow 0.15s ease",
 
     "& fieldset": {
-      borderColor: "#e0e0e0",   
+      borderColor: "#d1d5db",
+      borderWidth: "1px",
+    },
+    "&:hover fieldset": {
+      borderColor: "#9ca3af",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#2563eb",
       borderWidth: "1.5px",
     },
-
-    "&:hover fieldset": {
-      borderColor: "#b0b0b0",
-    },
-
-    "&.Mui-focused fieldset": {
-      borderColor: "#2563EB",  
-      borderWidth: "2px",
-    },
     "&.Mui-focused": {
-      boxShadow: "0 0 0 3px rgba(37,99,235,0.15)",
+      boxShadow: "0 0 0 3px rgba(37,99,235,0.1)",
     },
-
     "&.Mui-error fieldset": {
-      borderColor: "#ef4444",   
+      borderColor: "#dc2626",
     },
     "&.Mui-error": {
-      boxShadow: "0 0 0 3px rgba(239,68,68,0.1)",
+      boxShadow: "0 0 0 3px rgba(220,38,38,0.08)",
     },
   },
 
   "& .MuiInputLabel-root": {
     color: "#9ca3af",
-    fontSize: "0.95rem",
+    fontSize: "14px",
   },
-
   "& .MuiInputLabel-root.Mui-focused": {
-    color: "#2563EB",
+    color: "#2563eb",
   },
-
   "& .MuiInputLabel-root.Mui-error": {
-    color: "#ef4444",
+    color: "#dc2626",
   },
-
 };
-const btnSx = {
-  padding: "1rem",
-  transition: "transform 0.2s",
+
+export const btnSx = {
+  width: 48,
+  height: 48,
+  minWidth: "auto", 
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "1px solid #e5e7eb",
+  borderRadius: "8px",
+  padding: 0,
+  background: "#fff",
+  transition: "border-color .15s, background .15s, transform .15s", 
   "&:hover": {
-    transform: "scale(1.2)",
-    background: "transparent",
+    background: "#f9fafb",
+    borderColor: "#d1d5db",
+    transform: "scale(1.1)", 
   },
 };
 
-const iconSx = {
-  fb: { color: "#5269a4", fontSize: "2.4rem" },
-
-  x: { color: "#000000", fontSize: "35px" },
-
-  git: { color: "#5c5c5c", fontSize: "35px" },
-
+export const iconSx = {
+  google: {
+    width: "22px", 
+    height: "22px",
+    display: "flex",
+  },
   imageIcon: {
     width: "100%",
     height: "100%",
     objectFit: "contain",
-    display: "block"
+    display: "block",
   },
-  google: {
-    width: "35px",
-    height: "35px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  }
+  fb:  { color: "#1877F2", fontSize: "24px" },
+  x:   { color: "#000000", fontSize: "20px" }, 
+  git: { color: "#1f2328", fontSize: "24px" },
 };
-
-export { authStyles, inputStyles, btnSx, iconSx };

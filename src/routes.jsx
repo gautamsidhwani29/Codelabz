@@ -127,11 +127,6 @@ const Routes = () => {
           />
           <Route
             exact
-            path="/auth"
-            render={props => <AuthPage {...props} type="login" />}
-          />
-           <Route
-            exact
             path="/login"
             render={props => <AuthPage {...props} type="login" />}
           />
@@ -140,6 +135,8 @@ const Routes = () => {
             path="/signup"
             render={props => <AuthPage {...props} type="signup" />}
           />
+
+          <Redirect exact from="/auth" to="/login" />
 
           <Route
             exact

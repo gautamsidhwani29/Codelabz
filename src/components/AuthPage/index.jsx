@@ -1,132 +1,87 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { UserIsNotAuthenticated } from "../../auth";
+import { Link } from "react-router-dom"; // Removed useLocation, useState, useEffect
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { authStyles } from "./styles";
 import Login from "./Login";
 import SignUp from "./SignUp";
-import Box from "@mui/material/Box";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
-import { authStyles } from "./styles";
+import { UserIsNotAuthenticated } from "../../auth";
+
+const LogoIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+    <rect x="2" y="2" width="9" height="9" rx="2" fill="white" />
+    <rect
+      x="13"
+      y="2"
+      width="9"
+      height="9"
+      rx="2"
+      fill="white"
+      fillOpacity="0.7"
+    />
+    <rect
+      x="2"
+      y="13"
+      width="9"
+      height="9"
+      rx="2"
+      fill="white"
+      fillOpacity="0.7"
+    />
+    <rect
+      x="13"
+      y="13"
+      width="9"
+      height="9"
+      rx="2"
+      fill="white"
+      fillOpacity="0.4"
+    />
+  </svg>
+);
 
 const AuthPage = ({ type }) => {
-  const location = useLocation();
-
-  const [isLogin, setIsLogin] = useState(
-    location.state?.mode === "signup" ? false : type !== "signup"
-  );
-  useEffect(() => {
-    setIsLogin(location.state?.mode === "signup" ? false : type !== "signup");
-  }, [type, location.state]);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  if (isMobile) {
-    return (
-      <Box sx={authStyles.page}>
-        <Box sx={authStyles.mobileCard}>
-          {isLogin ? <Login /> : <SignUp />}
-
-          <Box sx={authStyles.mobileSwitch}>
-            {isLogin ? (
-              <>
-                Don't have an account?{" "}
-                <Box
-                  component="span"
-                  sx={authStyles.mobileSwitchLink}
-                  onClick={() => setIsLogin(false)}
-                >
-                  Sign Up
-                </Box>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <Box
-                  component="span"
-                  sx={authStyles.mobileSwitchLink}
-                  onClick={() => setIsLogin(true)}
-                >
-                  Log In
-                </Box>
-              </>
-            )}
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={authStyles.page}>
       <Box sx={authStyles.card}>
-        <Box sx={authStyles.half}>
-          <Login />
-        </Box>
-
-        <Box sx={authStyles.half}>
-          <SignUp />
-        </Box>
-        <Box
-          sx={{
-            ...authStyles.overlay,
-            transform: isLogin ? "translateX(100%)" : "translateX(0%)"
-          }}
-        >
-          <Box
-            sx={{
-              ...authStyles.face,
-              opacity: isLogin ? 1 : 0,
-              pointerEvents: isLogin ? "all" : "none"
-            }}
-          >
-            <Box sx={authStyles.overlayInner}>
-              <Box
-                component="h2"
-                sx={{ ...authStyles.overlayTitle, fontSize: "2.2rem" }}
-              >
-                Welcome back to <br />
-                CodeLabz!
-              </Box>
-              <Box component="p" sx={{ fontSize: "1.2rem" }}>
-                New here? Click below to join us!
-              </Box>
-              <Box
-                component="button"
-                sx={authStyles.overlayBtn}
-                onClick={() => setIsLogin(false)}
-              >
-                CREATE YOUR ACCOUNT
-              </Box>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              ...authStyles.face,
-              opacity: isLogin ? 0 : 1,
-              pointerEvents: isLogin ? "none" : "all"
-            }}
-          >
-            <Box sx={authStyles.overlayInner}>
-              <Box
-                component="h2"
-                sx={{ ...authStyles.overlayTitle, fontSize: "2.2rem" }}
-              >
-                Welcome to CodeLabz!
-              </Box>
-              <Box component="p" sx={{ fontSize: "1.2rem" }}>
-                Already signed up? <br /> Click below to login with your
-                credentials
-              </Box>
-              <Box
-                component="button"
-                sx={authStyles.overlayBtn}
-                onClick={() => setIsLogin(true)}
-              >
-                LOGIN
-              </Box>
-            </Box>
+        <Box sx={authStyles.logoWrap}>
+          <Box sx={authStyles.logoBox}>
+            <LogoIcon />
           </Box>
         </Box>
+        <Typography sx={authStyles.heading}>
+          {type === "login" ? "Welcome back" : "Welcome to CodeLabz"}
+        </Typography>
+
+        <Typography sx={authStyles.subheading}>
+          {type === "login"
+            ? "Log in to your account"
+            : "Join our developer community"}
+        </Typography>
+
+        <Box sx={authStyles.tabRow}>
+          <Box
+            component={Link}
+            to="/login"
+            sx={{
+              ...authStyles.tab(type === "login"),
+              textDecoration: "none"
+            }}
+          >
+            Login
+          </Box>
+          <Box
+            component={Link}
+            to="/signup"
+            sx={{
+              ...authStyles.tab(type === "signup"),
+              textDecoration: "none"
+            }}
+          >
+            Sign Up
+          </Box>
+        </Box>
+
+        {type === "login" ? <Login /> : <SignUp />}
       </Box>
     </Box>
   );
